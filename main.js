@@ -27,14 +27,15 @@ cliente.on("ready", async () => {
 });
 
 cliente.on("message", (msg) => {
-  if (msg.from == process.env.PRUEBA || msg.from == process.env.PERSONAL) {
+  console.log(msg.from);
+  if (msg.from === process.env.PRUEBA || msg.from === process.env.PERSONAL) {
     procesarMensaje(msg);
   }
 });
 
 async function procesarMensaje(msg) {
   try {
-    console.log(msg.body);
+    console.log(msg);
 
     const res = await axios.post("http://0.0.0.0:8000/consulasuelta/", {
       ruc: msg.body,
