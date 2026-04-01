@@ -1,7 +1,7 @@
 const { Client, LocalAuth } = require("whatsapp-web.js");
 const qrcode = require("qrcode-terminal");
 require("dotenv").config();
-const axios = require("axios");
+const api = require("./api.js");
 const { contruirMensaje, obtenerRuc } = require("./utils/utils.js");
 
 const cliente = new Client({
@@ -33,6 +33,7 @@ const numeroPersonal = process.env.PERSONAL;
 const grupo = process.env.PRUEBA;
 
 cliente.on("message", (msg) => {
+  console.log(msg);
   if (msg.from === numeroPersonal) {
     recibirToken(msg);
   }
@@ -43,7 +44,7 @@ cliente.on("message", (msg) => {
 async function recibirToken(msg) {
   try {
     const token = JSON.parse(msg.body);
-    const res = await axios.post("http://0.0.0.0:8000/token/", token);
+    const res = await api.post("/token/", token);
     if (res.status === 200) {
       await cliente.sendMessage(numeroPersonal, "Token actualizado");
     } else {
@@ -61,7 +62,7 @@ async function procesarMensaje(msg) {
     if (!ruc) {
       return;
     }
-    const res = await axios.post("http://0.0.0.0:8000/consulasuelta/", {
+    const res = await api.post("/consulasuelta/", {
       ruc,
     });
     // si la respuesta es igual a {} avisamos que falta token y esperamos que envie uno para cargarlo
@@ -73,7 +74,11 @@ async function procesarMensaje(msg) {
       await msg.reply(texto);
     }
   } catch (error) {
-    console.log(error);
+    if (error.message) {
+      await cliente.sendMessage(numeroPersonal, error.message);
+    } else {
+      console.log(error);
+    }
   }
 }
 
