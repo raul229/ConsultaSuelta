@@ -7,6 +7,7 @@ const {
   obtenerRuc,
   guardarMensaje,
   leerRegistros,
+  escribirRegistros,
 } = require("./utils/utils.js");
 
 const cliente = new Client({
@@ -36,7 +37,12 @@ const grupo = process.env.PRUEBA;
 
 cliente.on("message", (msg) => {
   if (msg.from === numeroPersonal) {
-    recibirToken(msg);
+    if (msg.body.toUpperCase() === "ACTUALIZAR") {
+      cargarToken();
+      procesarMensajesPendientes();
+    } else {
+      recibirToken(msg);
+    }
   }
   if (msg.from === grupo) {
     procesarMensaje(msg);
@@ -52,7 +58,6 @@ async function recibirToken(msg) {
       await cliente.sendMessage(numeroPersonal, "Error al actualizar el token");
     }
   } catch (error) {
-    console.log(error);
     console.log("Formato json equivocado");
   }
 }
@@ -91,6 +96,15 @@ async function procesarMensaje(msg) {
     } else {
       console.log(error);
     }
+  }
+}
+
+async function cargarToken() {
+  const res = await api.get("/update/");
+  if (res.status === 200) {
+    await cliente.sendMessage(numeroPersonal, "Token actualizado");
+  } else {
+    await cliente.sendMessage(numeroPersonal, "Error al actualizar el token");
   }
 }
 
